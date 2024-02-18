@@ -9,7 +9,7 @@ import (
 func init() {
 	AuthCmd.AddCommand(InCmd)
 	AuthCmd.AddCommand(OutCmd)
-	AuthCmd.AddCommand(CheckCmd) // Assuming you have a CheckCmd defined somewhere
+	AuthCmd.AddCommand(CheckCmd)
 }
 
 var AuthCmd = &cobra.Command{
