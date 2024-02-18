@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// inCmd represents the 'auth in' command
 var CheckCmd = &cobra.Command{
 	Use:   "check",
 	Short: "Check Google Drive authentication",

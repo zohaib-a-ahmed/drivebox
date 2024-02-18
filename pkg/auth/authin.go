@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/pkg/browser"
@@ -18,7 +19,7 @@ import (
 var InCmd = &cobra.Command{
 	Use:   "in",
 	Short: "Sign in to Google Drive",
-	Long:  `Sign in to Google Drive using OAuth authentication.`,
+	Long:  `Sign in to Google Drive using OAuth2.0 authentication.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Starting authentication process...")
 		signIn()
@@ -31,6 +32,8 @@ func signIn() {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
+	server := &http.Server{Addr: ":9999"}
+
 	config := &oauth2.Config{
 		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
 		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
@@ -41,7 +44,7 @@ func signIn() {
 
 	// Generate the OAuth URL and open it in the browser.
 	url := config.AuthCodeURL("state", oauth2.AccessTypeOffline)
-	fmt.Printf("Opening browser to visit: %s\n", url)
+	//fmt.Printf("Opening browser to visit: %s\n", url)
 
 	// Open URL in the user's browser.
 	if err := browser.OpenURL(url); err != nil {
@@ -75,15 +78,18 @@ func signIn() {
 			return
 		}
 
-		// Notify the user of successful authentication.
-		fmt.Fprintf(w, "Authentication successful! You may close this window.")
-		log.Println("Authentication successful!")
+		fmt.Fprintf(w, "Authentication successful! You may now close this window.")
+		log.Println("Authentication successful! Shutting down server..")
+		time.Sleep(3 * time.Second)
+		if err := server.Shutdown(context.Background()); err != nil {
+			log.Printf("HTTP server Shutdown: %v", err)
+		}
 	})
 
 	// Start the HTTP server.
-	fmt.Println("Starting local server at http://localhost:9999/oauth/callback to receive the authorization code...")
-	if err := http.ListenAndServe(":9999", nil); err != nil {
-		log.Fatalf("Unable to start HTTP server: %v", err)
+	fmt.Println("Starting local server to receive the authorization code...")
+	if err := server.ListenAndServe(); err != http.ErrServerClosed {
+		log.Fatalf("HTTP server ListenAndServe: %v", err)
 	}
 }
 
