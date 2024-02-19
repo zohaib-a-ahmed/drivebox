@@ -9,11 +9,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/joho/godotenv"
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
 )
 
 var InCmd = &cobra.Command{
@@ -27,23 +25,11 @@ var InCmd = &cobra.Command{
 }
 
 func signIn() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
-	}
 
 	server := &http.Server{Addr: ":9999"}
 
-	config := &oauth2.Config{
-		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
-		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
-		Scopes:       []string{"https://www.googleapis.com/auth/drive"},
-		Endpoint:     google.Endpoint,
-		RedirectURL:  "http://localhost:9999/oauth/callback",
-	}
-
 	// Generate the OAuth URL and open it in the browser.
-	url := config.AuthCodeURL("state", oauth2.AccessTypeOffline)
+	url := NewConfig().AuthCodeURL("state", oauth2.AccessTypeOffline)
 	//fmt.Printf("Opening browser to visit: %s\n", url)
 
 	// Open URL in the user's browser.
@@ -65,7 +51,7 @@ func signIn() {
 		}
 
 		// Exchange the authorization code for an access token.
-		token, err := config.Exchange(ctx, code)
+		token, err := NewConfig().Exchange(ctx, code)
 		if err != nil {
 			http.Error(w, "Failed to exchange token: "+err.Error(), http.StatusInternalServerError)
 			log.Printf("Failed to exchange token: %v\n", err)
