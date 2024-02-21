@@ -3,7 +3,9 @@ package unload
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -16,8 +18,9 @@ import (
 var UnloadCmd = &cobra.Command{
 	Use:   "unload <file_name> <optional_path_destination>",
 	Short: "Download a file from Google Drive",
-	Long: `Download a file from your Google Drive to a local path. 
-If no destination is provided, the file will be downloaded to the current directory.`,
+	Long: `Download a file from your Google Drive to a local path.
+If no destination is provided, the file will be downloaded to the current directory.
+Enter the number of the file you wish to download, use 'refine <query>' to narrow down your search, or type 'quit' to exit the command.`,
 	Args: cobra.MinimumNArgs(1), // Ensures at least one argument is provided
 	Run: func(cmd *cobra.Command, args []string) {
 		fileName := args[0]
@@ -103,11 +106,79 @@ func handleUserSelection(driveService *drive.Service, files []*drive.File, desti
 				fmt.Println("Invalid selection. Please enter a valid number or 'quit' to exit.")
 				continue
 			}
-
-			// Placeholder for download logic
-			fmt.Printf("Downloading file: %s to %s\n", files[selection-1].Name, destination)
-			// Implement the download logic here using files[selection-1].Id and `destination`
+			downloadFile(driveService, files[selection-1].Id, destination)
 			break
 		}
 	}
+}
+
+func downloadFile(driveService *drive.Service, fileId, destinationPath string) error {
+	file, err := driveService.Files.Get(fileId).Fields("name", "mimeType").Do()
+	if err != nil {
+		return fmt.Errorf("failed to get file: %v", err)
+	}
+
+	var resp *http.Response
+	var fileName string // Variable to hold the final file name including extension
+
+	if strings.Contains(file.MimeType, "google-apps") {
+		// Determine the correct export MIME type and corresponding file extension
+		exportMimeType, fileExtension := determineExportFormat(file.MimeType)
+		resp, err = driveService.Files.Export(fileId, exportMimeType).Download()
+		if err != nil {
+			return fmt.Errorf("failed to export and download file: %v", err)
+		}
+		// Append the appropriate file extension to the original file name
+		fileName = sanitizeFileName(file.Name) + fileExtension
+	} else {
+		// For binary files, directly download and use the original file name
+		resp, err = driveService.Files.Get(fileId).Download()
+		if err != nil {
+			return fmt.Errorf("failed to download file: %v", err)
+		}
+		fileName = sanitizeFileName(file.Name)
+	}
+	defer resp.Body.Close()
+
+	// Ensure the destination path ends with a separator
+	if !strings.HasSuffix(destinationPath, "/") && !strings.HasSuffix(destinationPath, "\\") {
+		destinationPath += "/"
+	}
+
+	// Create a file at the specified destination with the correct file extension
+	outFile, err := os.Create(destinationPath + fileName)
+	if err != nil {
+		return fmt.Errorf("failed to create file: %v", err)
+	}
+	defer outFile.Close()
+
+	// Write the content to the file
+	_, err = io.Copy(outFile, resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to write file: %v", err)
+	}
+
+	fmt.Printf("Download complete: %s\n", destinationPath+fileName)
+	return nil
+}
+
+// determineExportFormat returns the MIME type and file extension for exporting Google Docs formats.
+func determineExportFormat(mimeType string) (exportMimeType, fileExtension string) {
+	switch mimeType {
+	case "application/vnd.google-apps.document":
+		return "application/pdf", ".pdf"
+	case "application/vnd.google-apps.spreadsheet":
+		return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", ".xlsx"
+	case "application/vnd.google-apps.presentation":
+		return "application/vnd.openxmlformats-officedocument.presentationml.presentation", ".pptx"
+	// Add more cases as needed
+	default:
+		return "application/pdf", ".pdf" //
+	}
+}
+
+// sanitizeFileName cleans up the file name to prevent path traversal vulnerabilities or issues with illegal characters.
+func sanitizeFileName(name string) string {
+	// Simple sanitization logic; consider expanding based on your needs.
+	return strings.ReplaceAll(name, "/", "_")
 }
