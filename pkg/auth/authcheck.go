@@ -19,7 +19,7 @@ var CheckCmd = &cobra.Command{
 
 		token, err := loadToken("token.json")
 		if err != nil {
-			fmt.Println("Failed to load token:", err)
+			fmt.Println("Failed to load token.")
 			fmt.Println("Please run 'drivebox auth in' to authenticate.")
 			return
 		}

@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/zohaib-a-ahmed/drivebox/pkg/auth"
 )
 
 var UnloadCmd = &cobra.Command{
@@ -25,7 +26,25 @@ If no destination is provided, the file will be downloaded to the current direct
 			}
 		}
 
-		fmt.Printf("Downloading '%s' to '%s'...\n", fileName, destination)
-		// Placeholder for search, selection, and download logic
+		driveService, err := auth.CreateDriveService()
+		if err != nil {
+			log.Fatalf("Failed to create Google Drive service: %v", err)
+		}
+
+		// Search for the file on Google Drive
+		query := fmt.Sprintf("name contains '%s'", fileName)
+		call := driveService.Files.List().Q(query).PageSize(6).Fields("files(id, name)")
+		files, err := call.Do()
+		if err != nil {
+			log.Fatalf("Failed to retrieve files: %v", err)
+		}
+		if len(files.Files) == 0 {
+			fmt.Println("No files found.")
+			return
+		}
+		fmt.Println("Files found:")
+		for i, file := range files.Files {
+			fmt.Printf("%d: %s \n", i+1, file.Name)
+		}
 	},
 }
