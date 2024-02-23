@@ -39,7 +39,6 @@ func signIn() {
 		log.Fatalf("Failed to open browser: %v", err)
 	}
 
-	// This function is defined within your signIn() function or globally if you prefer.
 	http.HandleFunc("/oauth/callback", func(w http.ResponseWriter, r *http.Request) {
 		ctx := context.Background()
 

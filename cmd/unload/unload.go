@@ -119,7 +119,7 @@ func downloadFile(driveService *drive.Service, fileId, destinationPath string) e
 	}
 
 	var resp *http.Response
-	var fileName string // Variable to hold the final file name including extension
+	var fileName string
 
 	if strings.Contains(file.MimeType, "google-apps") {
 		// Determine the correct export MIME type and corresponding file extension
@@ -179,6 +179,5 @@ func determineExportFormat(mimeType string) (exportMimeType, fileExtension strin
 
 // sanitizeFileName cleans up the file name to prevent path traversal vulnerabilities or issues with illegal characters.
 func sanitizeFileName(name string) string {
-	// Simple sanitization logic; consider expanding based on your needs.
 	return strings.ReplaceAll(name, "/", "_")
 }
