@@ -12,6 +12,8 @@ import (
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 	"golang.org/x/oauth2"
+	"google.golang.org/api/drive/v3"
+	"google.golang.org/api/option"
 )
 
 var InCmd = &cobra.Command{
@@ -21,11 +23,11 @@ var InCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Starting authentication process...")
 		signIn()
+		log.Println("Authentication successful!")
 	},
 }
 
 func signIn() {
-
 	server := &http.Server{Addr: ":9999"}
 
 	// Generate the OAuth URL and open it in the browser.
@@ -37,7 +39,6 @@ func signIn() {
 		log.Fatalf("Failed to open browser: %v", err)
 	}
 
-	// This function is defined within your signIn() function or globally if you prefer.
 	http.HandleFunc("/oauth/callback", func(w http.ResponseWriter, r *http.Request) {
 		ctx := context.Background()
 
@@ -65,7 +66,7 @@ func signIn() {
 		}
 
 		fmt.Fprintf(w, "Authentication successful! You may now close this window.")
-		log.Println("Authentication successful! Shutting down server..")
+		log.Println("Shutting down server..")
 		time.Sleep(3 * time.Second)
 		if err := server.Shutdown(context.Background()); err != nil {
 			log.Printf("HTTP server Shutdown: %v", err)
@@ -92,4 +93,38 @@ func saveToken(path string, token *oauth2.Token) error {
 	}
 
 	return nil
+}
+
+func loadTokenFromFile(file string) (*oauth2.Token, error) {
+	f, err := os.Open(file)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	token := &oauth2.Token{}
+	err = json.NewDecoder(f).Decode(token)
+	if err != nil {
+		return nil, err
+	}
+	return token, nil
+}
+
+func CreateDriveService() (*drive.Service, error) {
+	// Create a new OAuth2 HTTP client using the token
+	ctx := context.Background()
+	config := NewConfig()
+
+	token, err := loadTokenFromFile("token.json")
+	if err != nil {
+		log.Fatalf("Unable to load token; Check authenticatio with 'drivebox auth check' \n %v", err)
+	}
+
+	client := config.Client(ctx, token)
+
+	// Create a new Google Drive service client
+	srv, err := drive.NewService(ctx, option.WithHTTPClient(client))
+	if err != nil {
+		return nil, fmt.Errorf("cannot create drive service: %v", err)
+	}
+	return srv, nil
 }
