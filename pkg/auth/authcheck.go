@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -20,7 +21,7 @@ var CheckCmd = &cobra.Command{
 		token, err := loadToken("token.json")
 		if err != nil {
 			fmt.Println("Failed to load token.")
-			fmt.Println("Please run 'drivebox auth in' to authenticate.")
+			fmt.Println("Use 'drivebox auth in' to authenticate.")
 			return
 		}
 
@@ -33,9 +34,9 @@ var CheckCmd = &cobra.Command{
 		defer resp.Body.Close()
 
 		if resp.StatusCode == 200 {
-			fmt.Println("Current session is authenticated.")
+			log.Println("Current session authorized!")
 		} else {
-			fmt.Println("Current session is not authorized. Please run 'drivebox auth in' to authenticate.")
+			fmt.Println("Current session is not authorized. Use 'drivebox auth in' to authenticate.")
 		}
 	},
 }

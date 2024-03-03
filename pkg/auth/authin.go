@@ -21,7 +21,6 @@ var InCmd = &cobra.Command{
 	Short: "Sign in to Google Drive",
 	Long:  `Sign in to Google Drive using OAuth2.0 authentication.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Starting authentication process...")
 		signIn()
 		log.Println("Authentication successful!")
 	},
@@ -45,9 +44,7 @@ func signIn() {
 		// Extract the code from the query string.
 		code := r.URL.Query().Get("code")
 		if code == "" {
-			// Handle the error case.
 			http.Error(w, "Code not found in the request", http.StatusBadRequest)
-			log.Println("Code not found in the request")
 			return
 		}
 
@@ -55,18 +52,15 @@ func signIn() {
 		token, err := NewConfig().Exchange(ctx, code)
 		if err != nil {
 			http.Error(w, "Failed to exchange token: "+err.Error(), http.StatusInternalServerError)
-			log.Printf("Failed to exchange token: %v\n", err)
 			return
 		}
 
 		if err := saveToken("token.json", token); err != nil {
 			http.Error(w, "Failed to save token", http.StatusInternalServerError)
-			log.Printf("Failed to save token: %v\n", err)
 			return
 		}
 
 		fmt.Fprintf(w, "Authentication successful! You may now close this window.")
-		log.Println("Shutting down server..")
 		time.Sleep(3 * time.Second)
 		if err := server.Shutdown(context.Background()); err != nil {
 			log.Printf("HTTP server Shutdown: %v", err)
@@ -74,7 +68,6 @@ func signIn() {
 	})
 
 	// Start the HTTP server.
-	fmt.Println("Starting local server to receive the authorization code...")
 	if err := server.ListenAndServe(); err != http.ErrServerClosed {
 		log.Fatalf("HTTP server ListenAndServe: %v", err)
 	}
