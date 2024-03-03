@@ -49,6 +49,7 @@ func CheckValidPath(path string) (code int) {
 	}
 	return 200
 }
+
 func UploadFileToDrive(filePath string, svc *drive.Service, parentID string) (int, error) {
 
 	// Gather file information
@@ -83,7 +84,10 @@ func UploadFileToDrive(filePath string, svc *drive.Service, parentID string) (in
 	if err != nil {
 		return 400, err
 	}
+	if res.Id == "" {
+		return 200, nil
+	}
 
-	fmt.Println("File ID:", res.Id)
+	fmt.Println("Successful Upload.")
 	return 200, nil
 }

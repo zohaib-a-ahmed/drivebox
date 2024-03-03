@@ -16,7 +16,6 @@ func init() {
 	AuthCmd.AddCommand(OutCmd)
 	AuthCmd.AddCommand(CheckCmd)
 
-	// This call now correctly sets up environment variables before any command execution.
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
