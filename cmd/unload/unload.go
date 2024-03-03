@@ -50,7 +50,7 @@ Enter the number of the file you wish to download, use 'refine <query>' to narro
 			fmt.Println("No files found.")
 			return
 		}
-		fmt.Println("Files found:")
+		log.Println("Files found:")
 		for i, file := range files.Files {
 			fmt.Printf("%d: %s \n", i+1, file.Name)
 		}
@@ -86,7 +86,7 @@ func handleUserSelection(driveService *drive.Service, files []*drive.File, desti
 
 		if strings.HasPrefix(input, "refine ") {
 			query := strings.TrimSpace(strings.TrimPrefix(input, "refine"))
-			fmt.Println("Refining search with:", query)
+			fmt.Println("Refining search with: ", query)
 			var err error
 			files, err = searchFiles(driveService, fmt.Sprintf("name contains '%s'", query))
 			if err != nil {
@@ -158,7 +158,7 @@ func downloadFile(driveService *drive.Service, fileId, destinationPath string) e
 		return fmt.Errorf("failed to write file: %v", err)
 	}
 
-	fmt.Printf("Download complete: %s\n", destinationPath+fileName)
+	log.Printf("Download complete: %s\n", destinationPath+fileName)
 	return nil
 }
 

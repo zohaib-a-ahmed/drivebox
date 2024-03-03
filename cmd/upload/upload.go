@@ -47,6 +47,7 @@ func CheckValidPath(path string) (code int) {
 		fmt.Printf("The file does not exist at the specified path: %s\n", path)
 		return 400
 	}
+	log.Println("Valid file desgination.")
 	return 200
 }
 
@@ -88,6 +89,6 @@ func UploadFileToDrive(filePath string, svc *drive.Service, parentID string) (in
 		return 200, nil
 	}
 
-	fmt.Println("Successful Upload.")
+	log.Println("Successful Upload!")
 	return 200, nil
 }

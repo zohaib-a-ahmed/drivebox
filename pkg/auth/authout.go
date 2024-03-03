@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -12,7 +13,6 @@ var OutCmd = &cobra.Command{
 	Short: "Sign out from Google Drive",
 	Long:  `Sign out from Google Drive and clear the authentication token.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Signing out from Google Drive...")
 		err := os.Remove("token.json")
 		if err != nil {
 			if os.IsNotExist(err) {
@@ -23,7 +23,7 @@ var OutCmd = &cobra.Command{
 				fmt.Printf("Error removing token file: %v\n", err)
 			}
 		} else {
-			fmt.Println("Successfully signed out.")
+			log.Println("Successfully signed out of session!")
 		}
 	},
 }

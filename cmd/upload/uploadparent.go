@@ -161,6 +161,6 @@ func CreateParentDirectory(svc *drive.Service) (string, error) {
 		return "", fmt.Errorf("failed to create directory: %v", err)
 	}
 
-	fmt.Println("Directory created successfully.")
+	log.Printf("New directory, %s, created successfully.", dirName)
 	return newDir.Id, nil
 }
