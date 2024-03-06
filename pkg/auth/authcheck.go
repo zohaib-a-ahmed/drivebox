@@ -16,19 +16,18 @@ var CheckCmd = &cobra.Command{
 	Short: "Check Google Drive authentication",
 	Long:  `Check whether the current session is authenticated with Google OAuth.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Checking authentication...")
+		log.Println("Checking authentication...")
 
 		token, err := loadToken("token.json")
 		if err != nil {
-			fmt.Println("Failed to load token.")
-			fmt.Println("Use 'drivebox auth in' to authenticate.")
+			log.Println("Failed to load token. Use 'drivebox auth in' to authenticate.")
 			return
 		}
 
 		client := NewConfig().Client(context.Background(), token)
 		resp, err := client.Get("https://www.googleapis.com/drive/v3/files/root?fields=id")
 		if err != nil {
-			fmt.Println("Failed to make API request:", err)
+			fmt.Println("Failed to make outgoing API request:", err)
 			return
 		}
 		defer resp.Body.Close()
@@ -36,7 +35,7 @@ var CheckCmd = &cobra.Command{
 		if resp.StatusCode == 200 {
 			log.Println("Current session authorized!")
 		} else {
-			fmt.Println("Current session is not authorized. Use 'drivebox auth in' to authenticate.")
+			log.Println("Current session is not authorized. Use 'drivebox auth in' to authenticate.")
 		}
 	},
 }
