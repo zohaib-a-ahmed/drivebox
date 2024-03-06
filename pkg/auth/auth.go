@@ -15,6 +15,7 @@ func init() {
 	AuthCmd.AddCommand(InCmd)
 	AuthCmd.AddCommand(OutCmd)
 	AuthCmd.AddCommand(CheckCmd)
+	AuthCmd.AddCommand(SetUpCmd)
 
 	err := godotenv.Load(".env")
 	if err != nil {
