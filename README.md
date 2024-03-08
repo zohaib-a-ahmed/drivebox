@@ -32,14 +32,15 @@ Before using DriveBox, you'll need to set up a Google Cloud project and obtain y
 
    - Set up the OAuth consent screen in the "Credentials" section by providing the necessary information about your application.
 
-5. **Create a `.env` File**:
-   - In the root directory of DriveBox, create a `.env` file containing your Client ID and Client Secret:
-     ```
-     GOOGLE_CLIENT_ID=your_client_id_here
-     GOOGLE_CLIENT_SECRET=your_client_secret_here
-     ```
-
 ## Usage
+
+### Initial Setup
+
+Upon initial installation, follow the setup instructions to acquire a valid Google Client ID and Client secret. You can then setup the application with the command:
+
+```sh
+drivebox auth setup
+```
 
 ### Authentication
 
