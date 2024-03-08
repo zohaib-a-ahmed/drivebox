@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 
@@ -27,7 +26,7 @@ var CheckCmd = &cobra.Command{
 		client := NewConfig().Client(context.Background(), token)
 		resp, err := client.Get("https://www.googleapis.com/drive/v3/files/root?fields=id")
 		if err != nil {
-			fmt.Println("Failed to make outgoing API request:", err)
+			log.Fatalf("Failed to make outgoing API request; config (client) credentials may not have been set up:", err)
 			return
 		}
 		defer resp.Body.Close()

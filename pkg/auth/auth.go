@@ -19,7 +19,16 @@ func init() {
 
 	err := godotenv.Load(".env")
 	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+		if os.IsNotExist(err) {
+			file, err := os.Create(".env")
+			if err != nil {
+				log.Fatalf("Error creating .env file: %v", err)
+			}
+			file.Close()
+			log.Println(".env file created.")
+		} else {
+			log.Fatalf("Error loading .env file: %v", err)
+		}
 	}
 }
 
